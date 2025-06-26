@@ -62,7 +62,7 @@ const Navbar = () => {
                     ? "/"
                     : item === "Ma liste de tâches"
                     ? "/todo"
-                    : "/docs"
+                    : "http://localhost:3001/api-docs"
                 }
                 className="text-sm text-gray-900 hover:text-gray-600 transition-colors font-medium"
               >
@@ -135,7 +135,7 @@ const Navbar = () => {
                           ? "/"
                           : item === "Ma liste de tâches"
                           ? "/todo"
-                          : "/docs"
+                          : "/http://localhost:3001/api-docs"
                       }
                       className="text-base text-gray-900 font-medium"
                       onClick={toggleMenu}
