@@ -1,10 +1,4 @@
 {
-  "tasks": [
-    {
-      "id": 255,
-      "title": "Tâche à modifier",
-      "completed": false
-    }
-  ],
-  "nextId": 256
+  "tasks": [],
+  "nextId": 291
 }
