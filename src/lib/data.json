@@ -3,7 +3,7 @@
     {
       "id": 2,
       "title": "Test 2",
-      "completed": true
+      "completed": false
     },
     {
       "id": 3,
