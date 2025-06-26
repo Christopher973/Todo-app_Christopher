@@ -31,7 +31,7 @@ export function TaskList({
   // États de chargement
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div data-testid="loading-skeleton" className="space-y-4">
         {[...Array(3)].map((_, i) => (
           <div key={i} className="animate-pulse bg-gray-200 h-16 rounded-lg" />
         ))}
@@ -42,7 +42,7 @@ export function TaskList({
   // Gestion des erreurs
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" data-testid="error-message">
         <AlertTitle>Erreur de chargement</AlertTitle>
         <AlertDescription>{error.message}</AlertDescription>
       </Alert>
@@ -52,7 +52,7 @@ export function TaskList({
   // État vide
   if (tasks.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div data-testid="empty-state" className="text-center py-12">
         <p className="text-gray-500 text-lg">Aucune tâche pour le moment</p>
         <p className="text-gray-400">
           Commencez par ajouter votre première tâche !
@@ -63,7 +63,7 @@ export function TaskList({
 
   // Liste des tâches
   return (
-    <div className="space-y-4">
+    <div data-testid="task-list" className="space-y-4">
       {tasks.map((task) => (
         <TaskItem
           key={task.id}

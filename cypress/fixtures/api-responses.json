@@ -1,0 +1,110 @@
+{
+  "healthCheck": {
+    "status": "ok",
+    "timestamp": "2024-01-15T10:00:00.000Z",
+    "service": "todo-api",
+    "version": "1.0.0"
+  },
+  "emptyTasks": {
+    "success": true,
+    "data": [],
+    "total": 0,
+    "message": "Aucune tâche trouvée"
+  },
+  "sampleTasks": {
+    "success": true,
+    "data": [
+      {
+        "id": "1",
+        "title": "Première tâche de test",
+        "completed": false,
+        "createdAt": "2024-01-15T09:00:00.000Z",
+        "updatedAt": "2024-01-15T09:00:00.000Z"
+      },
+      {
+        "id": "2",
+        "title": "Deuxième tâche complétée",
+        "completed": true,
+        "createdAt": "2024-01-15T08:30:00.000Z",
+        "updatedAt": "2024-01-15T10:15:00.000Z"
+      },
+      {
+        "id": "3",
+        "title": "Troisième tâche en cours",
+        "completed": false,
+        "createdAt": "2024-01-15T08:00:00.000Z",
+        "updatedAt": "2024-01-15T08:00:00.000Z"
+      }
+    ],
+    "total": 3,
+    "message": "Tâches récupérées avec succès"
+  },
+  "createTaskSuccess": {
+    "success": true,
+    "data": {
+      "id": "new-task-id",
+      "title": "Nouvelle tâche créée",
+      "completed": false,
+      "createdAt": "2024-01-15T10:30:00.000Z",
+      "updatedAt": "2024-01-15T10:30:00.000Z"
+    },
+    "message": "Tâche créée avec succès"
+  },
+  "updateTaskSuccess": {
+    "success": true,
+    "data": {
+      "id": "existing-task-id",
+      "title": "Tâche mise à jour",
+      "completed": false,
+      "createdAt": "2024-01-15T09:00:00.000Z",
+      "updatedAt": "2024-01-15T10:45:00.000Z"
+    },
+    "message": "Tâche mise à jour avec succès"
+  },
+  "deleteTaskSuccess": {
+    "success": true,
+    "data": {
+      "id": "deleted-task-id",
+      "deleted": true
+    },
+    "message": "Tâche supprimée avec succès"
+  },
+  "errors": {
+    "validationError": {
+      "success": false,
+      "error": "Données de validation invalides",
+      "details": {
+        "field": "title",
+        "message": "Le titre est requis et ne peut pas être vide"
+      },
+      "code": "VALIDATION_ERROR"
+    },
+    "notFoundError": {
+      "success": false,
+      "error": "Tâche non trouvée",
+      "details": {
+        "id": "non-existent-id",
+        "message": "Aucune tâche trouvée avec cet identifiant"
+      },
+      "code": "NOT_FOUND"
+    },
+    "serverError": {
+      "success": false,
+      "error": "Erreur interne du serveur",
+      "details": {
+        "message": "Une erreur inattendue s'est produite",
+        "timestamp": "2024-01-15T10:50:00.000Z"
+      },
+      "code": "INTERNAL_SERVER_ERROR"
+    },
+    "networkError": {
+      "success": false,
+      "error": "Erreur de réseau",
+      "details": {
+        "message": "Impossible de contacter le serveur",
+        "timeout": true
+      },
+      "code": "NETWORK_ERROR"
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Première tâche de test",
+      "completed": false
+    },
+    {
+      "id": 2,
+      "title": "Deuxième tâche de test",
+      "completed": true
+    },
+    {
+      "id": 3,
+      "title": "Tâche à supprimer",
+      "completed": false
+    }
+  ],
+  "taskData": {
+    "newTask": {
+      "title": "Nouvelle tâche",
+      "completed": false
+    },
+    "completedTask": {
+      "title": "Tâche terminée",
+      "completed": true
+    },
+    "longTitle": {
+      "title": "Cette tâche a un titre particulièrement long pour tester la validation de la longueur maximale autorisée qui est de 200 caractères selon les spécifications",
+      "completed": false
+    }
+  },
+  "testScenarios": {
+    "creation": {
+      "validTitle": "Tâche de test valide",
+      "emptyTitle": "",
+      "maxLengthTitle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "tooLongTitle": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "update": {
+      "newTitle": "Titre modifié",
+      "toggleCompletion": true
+    }
+  }
+}

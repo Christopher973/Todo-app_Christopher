@@ -34,15 +34,21 @@ export function TaskForm({ onSubmit, loading, error }: TaskFormProps) {
     <div className="mb-8">
       {/* Affichage des erreurs */}
       {error && (
-        <Alert variant="destructive" className="mb-4">
+        <Alert variant="destructive" className="mb-4" data-testid="error-toast">
           <AlertTitle>Erreur</AlertTitle>
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
       {/* Formulaire */}
-      <form onSubmit={handleSubmit} className="flex gap-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex gap-4"
+        data-testid="task-form"
+      >
         <input
+          data-testid="task-input"
+          aria-label="Nouveau titre de tâche"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -53,6 +59,8 @@ export function TaskForm({ onSubmit, loading, error }: TaskFormProps) {
         />
 
         <button
+          data-testid="task-submit"
+          aria-label="Ajouter la tâche"
           type="submit"
           disabled={loading || title.trim().length === 0}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -60,6 +68,16 @@ export function TaskForm({ onSubmit, loading, error }: TaskFormProps) {
           {loading ? "Création..." : "Ajouter"}
         </button>
       </form>
+
+      {/* Validation côté client */}
+      {title.length > 200 && (
+        <div
+          data-testid="validation-error"
+          className="mt-2 text-sm text-red-600"
+        >
+          Titre trop long (maximum 200 caractères)
+        </div>
+      )}
     </div>
   );
 }

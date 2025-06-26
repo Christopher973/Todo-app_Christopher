@@ -48,17 +48,28 @@ export function TaskItem({
   };
 
   const handleDelete = async () => {
-    const confirmed = window.confirm(`Supprimer "${task.title}" ?`);
+    const confirmed = window.confirm(
+      `Êtes-vous sûr de vouloir supprimer "${task.title}" ? Cette action est irréversible.`
+    );
     if (confirmed) {
       await onDelete(task);
     }
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div
+      data-testid="task-item"
+      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+    >
       <div className="flex items-center gap-4">
         {/* Checkbox de completion */}
         <button
+          data-testid="task-toggle"
+          aria-label={
+            task.completed
+              ? "Marquer comme non complétée"
+              : "Marquer comme complétée"
+          }
           onClick={handleToggleComplete}
           disabled={isUpdating || isDeleting}
           className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
@@ -67,6 +78,13 @@ export function TaskItem({
               : "border-gray-300 hover:border-green-400"
           }`}
         >
+          <input
+            data-testid="task-checkbox"
+            type="checkbox"
+            checked={task.completed}
+            onChange={() => {}} // Géré par le bouton parent
+            className="sr-only"
+          />
           {task.completed && <Check size={12} />}
         </button>
 
@@ -74,6 +92,7 @@ export function TaskItem({
         <div className="flex-1">
           {isEditing ? (
             <input
+              data-testid="edit-input"
               type="text"
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
@@ -88,6 +107,7 @@ export function TaskItem({
             />
           ) : (
             <span
+              data-testid="task-title"
               className={`${
                 task.completed ? "line-through text-gray-500" : "text-gray-900"
               }`}
@@ -102,16 +122,20 @@ export function TaskItem({
           {isEditing ? (
             <>
               <button
+                data-testid="save-edit"
                 onClick={handleSaveEdit}
                 disabled={isUpdating || editTitle.trim().length === 0}
                 className="p-1 text-green-600 hover:bg-green-100 rounded"
+                aria-label="Sauvegarder les modifications"
               >
                 <Check size={16} />
               </button>
               <button
+                data-testid="cancel-edit"
                 onClick={handleCancelEdit}
                 disabled={isUpdating}
                 className="p-1 text-gray-600 hover:bg-gray-100 rounded"
+                aria-label="Annuler les modifications"
               >
                 <X size={16} />
               </button>
@@ -119,16 +143,20 @@ export function TaskItem({
           ) : (
             <>
               <button
+                data-testid="task-edit"
                 onClick={() => setIsEditing(true)}
                 disabled={isUpdating || isDeleting}
                 className="p-1 text-blue-600 hover:bg-blue-100 rounded"
+                aria-label="Modifier la tâche"
               >
                 <Pencil size={16} />
               </button>
               <button
+                data-testid="task-delete"
                 onClick={handleDelete}
                 disabled={isUpdating || isDeleting}
                 className="p-1 text-red-600 hover:bg-red-100 rounded"
+                aria-label="Supprimer la tâche"
               >
                 <Trash2 size={16} />
               </button>
@@ -139,15 +167,26 @@ export function TaskItem({
 
       {/* Affichage des erreurs */}
       {(updateError || deleteError) && (
-        <div className="mt-2 text-sm text-red-600">
+        <div data-testid="error-message" className="mt-2 text-sm text-red-600">
           {updateError?.message || deleteError?.message}
         </div>
       )}
 
       {/* États de chargement */}
-      {(isUpdating || isDeleting) && (
-        <div className="mt-2 text-sm text-gray-500">
-          {isUpdating ? "Mise à jour..." : "Suppression..."}
+      {isUpdating && (
+        <div
+          data-testid="updating-indicator"
+          className="mt-2 text-sm text-gray-500"
+        >
+          Mise à jour...
+        </div>
+      )}
+      {isDeleting && (
+        <div
+          data-testid="deleting-indicator"
+          className="mt-2 text-sm text-gray-500"
+        >
+          Suppression...
         </div>
       )}
     </div>
