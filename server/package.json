@@ -9,7 +9,8 @@
     "test:unit": "jest __tests__",
     "test:integration": "jest __tests__/integration",
     "lint": "eslint . --ext .js",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build": "echo 'Express application - No build step required'"
   },
   "jest": {
     "testEnvironment": "node",
