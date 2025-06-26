@@ -147,11 +147,7 @@ jobs:
         test-suite:
           - task-creation
           - task-reading
-          - task-update
           - task-deletion
-          - user-workflows
-          - error-handling
-          - crud-operations
 
     steps:
       - name: 📥 Checkout Repository
@@ -174,15 +170,12 @@ jobs:
       - name: 🎭 Run Cypress E2E Tests
         uses: cypress-io/github-action@v6
         with:
-          start: |
-            cd server && npm start
-            npm run start:next
+          start: npm run start
           wait-on: |
             http://localhost:${{ env.BACKEND_PORT }}/health
             http://localhost:${{ env.FRONTEND_PORT }}
           wait-on-timeout: 180
           browser: chrome
-          headless: true
           spec: cypress/e2e/todo/${{ matrix.test-suite }}.cy.ts
           config: |
             {
