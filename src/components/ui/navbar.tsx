@@ -48,7 +48,7 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          {["Accueil", "Ma liste de tâches", "Documentation"].map((item) => (
+          {["Ma liste de tâches", "Documentation"].map((item) => (
             <motion.div
               key={item}
               initial={{ opacity: 0, y: -10 }}
@@ -81,7 +81,8 @@ const Navbar = () => {
           whileHover={{ scale: 1.05 }}
         >
           <a
-            href="#"
+            href="https://github.com/Christopher973/Todo-app_Christopher"
+            target="_blank"
             className="inline-flex items-center justify-center px-5 py-2 text-lg gap-2 text-white bg-black rounded-full hover:bg-gray-800 transition-colors"
           >
             <Github />
@@ -120,31 +121,29 @@ const Navbar = () => {
               <X className="h-6 w-6 text-gray-900" />
             </motion.button>
             <div className="flex flex-col space-y-6">
-              {["Accueil", "Ma liste de tâches", "Documentation"].map(
-                (item, i) => (
-                  <motion.div
-                    key={item}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 + 0.1 }}
-                    exit={{ opacity: 0, x: 20 }}
+              {["Ma liste de tâches", "Documentation"].map((item, i) => (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 + 0.1 }}
+                  exit={{ opacity: 0, x: 20 }}
+                >
+                  <Link
+                    href={
+                      item === "Accueil"
+                        ? "/"
+                        : item === "Ma liste de tâches"
+                        ? "/todo"
+                        : "/http://localhost:3001/api-docs"
+                    }
+                    className="text-base text-gray-900 font-medium"
+                    onClick={toggleMenu}
                   >
-                    <Link
-                      href={
-                        item === "Accueil"
-                          ? "/"
-                          : item === "Ma liste de tâches"
-                          ? "/todo"
-                          : "/http://localhost:3001/api-docs"
-                      }
-                      className="text-base text-gray-900 font-medium"
-                      onClick={toggleMenu}
-                    >
-                      {item}
-                    </Link>
-                  </motion.div>
-                )
-              )}
+                    {item}
+                  </Link>
+                </motion.div>
+              ))}
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -154,7 +153,8 @@ const Navbar = () => {
                 className="pt-6"
               >
                 <a
-                  href="#"
+                  href="https://github.com/Christopher973/Todo-app_Christopher"
+                  target="_blank"
                   className="inline-flex items-center justify-center w-full px-5 py-3 text-lg gap-2 text-white bg-black rounded-full hover:bg-gray-800 transition-colors "
                   onClick={toggleMenu}
                 >
