@@ -29,6 +29,7 @@ declare global {
 
       // Utilitaires
       getTaskItem(title: string): Chainable<JQuery<HTMLElement>>;
+      waitForStableState(): Chainable<void>;
     }
   }
 }
@@ -170,9 +171,26 @@ Cypress.Commands.add(
  */
 Cypress.Commands.add("getTaskItem", (title: string) => {
   return cy
-    .get('[data-testid="task-list"]')
+    .get('[data-testid="task-list"]', { timeout: 10000 })
+    .should("be.visible")
     .contains(title)
     .closest('[data-testid="task-item"]');
+});
+
+Cypress.Commands.add("waitForStableState", () => {
+  cy.get('[data-testid="loading-skeleton"]').should("not.exist");
+  cy.get('[data-testid="updating-indicator"]').should("not.exist");
+  cy.get('[data-testid="deleting-indicator"]').should("not.exist");
+  cy.get('[data-testid="creating-indicator"]').should("not.exist");
+});
+
+Cypress.Commands.add("createTaskViaUI", (title: string) => {
+  cy.get('[data-testid="task-input"]').clear().type(title);
+  cy.get('[data-testid="task-submit"]').click();
+
+  // Attendre que la tâche apparaisse et soit stable
+  cy.get('[data-testid="task-list"]').should("contain", title);
+  cy.waitForStableState();
 });
 
 export {};

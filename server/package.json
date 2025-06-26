@@ -7,7 +7,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:unit": "jest __tests__",
-    "test:integration": "jest __tests__/integration"
+    "test:integration": "jest __tests__/integration",
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write ."
   },
   "jest": {
     "testEnvironment": "node",

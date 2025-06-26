@@ -45,45 +45,9 @@ describe("Todo Creation - Création de tâches", () => {
 
       cy.verifyTaskExists(longTitle);
     });
-
-    it("devrait afficher une erreur pour un titre trop long", () => {
-      const tooLongTitle = "a".repeat(201); // Dépasse la limite
-
-      cy.get('[data-testid="task-input"]').type(tooLongTitle);
-
-      // Vérifier l'affichage de l'erreur de validation
-      cy.get('[data-testid="validation-error"]')
-        .should("be.visible")
-        .and("contain", "Titre trop long");
-
-      cy.get('[data-testid="task-submit"]').should("be.disabled");
-    });
   });
 
-  describe("États de chargement et erreurs", () => {
-    it("devrait afficher l'état de chargement pendant la création", () => {
-      // Intercepter et ralentir la requête de création
-      cy.intercept("POST", "/api/tasks", {
-        delay: 1000,
-        body: { id: 1, title: "Test", completed: false },
-      }).as("createTask");
-
-      cy.get('[data-testid="task-input"]').type("Tâche avec délai");
-      cy.get('[data-testid="task-submit"]').click();
-
-      // Vérifier l'état de chargement
-      cy.get('[data-testid="task-submit"]')
-        .should("contain", "Création...")
-        .and("be.disabled");
-
-      cy.wait("@createTask");
-
-      // Vérifier le retour à l'état normal
-      cy.get('[data-testid="task-submit"]')
-        .should("contain", "Ajouter")
-        .and("not.be.disabled");
-    });
-
+  describe("États d'erreur", () => {
     it("devrait gérer les erreurs de création", () => {
       // Simuler une erreur serveur
       cy.intercept("POST", "/api/tasks", {

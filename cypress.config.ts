@@ -5,34 +5,32 @@ export default defineConfig({
     baseUrl: "http://localhost:3000",
     viewportWidth: 1280,
     viewportHeight: 720,
-    video: false,
-    screenshotOnRunFailure: true,
+    video: true, // ✅ Vidéos pour CI
+    screenshotOnRunFailure: true, // ✅ Screenshots en cas d'échec
 
-    // Solution propre : supprimer les paramètres inutilisés
-    setupNodeEvents() {
-      // Configuration des événements et plugins personnalisés
-      // Actuellement aucune configuration spécifique requise
+    setupNodeEvents(on, config) {
+      // Configuration pour CI
+      if (config.isTextTerminal) {
+        config.video = true;
+        config.videoCompression = 32;
+      }
     },
 
     env: {
       API_URL: "http://localhost:3001/api",
     },
 
-    supportFile: "cypress/support/e2e.ts",
-
-    // Timeouts
+    // Timeouts pour CI
     defaultCommandTimeout: 10000,
     requestTimeout: 10000,
     responseTimeout: 10000,
 
-    // Retry
+    // Retry pour stabilité CI
     retries: {
-      runMode: 2,
+      runMode: 2, // ✅ 2 tentatives en CI
       openMode: 0,
     },
 
-    // Patterns
     specPattern: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
-    excludeSpecPattern: ["cypress/e2e/examples/*"],
   },
 });

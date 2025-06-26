@@ -16,7 +16,12 @@
     "test:e2e": "start-server-and-test dev 3000 cypress:run",
     "test:e2e:open": "start-server-and-test dev 3000 cypress:open",
     "test:e2e:ci": "start-server-and-test start 3000 cypress:run",
-    "test:all": "npm run test:unit && npm run test:e2e"
+    "test:all": "npm run test:unit && npm run test:e2e",
+    "lint": "next lint",
+    "format:check": "prettier --check .",
+    "type-check": "tsc --noEmit",
+    "test:unit": "cd server && npm run test",
+    "test:coverage": "cd server && npm run test:coverage"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

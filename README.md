@@ -1,3 +1,9 @@
+# TODO App - Évaluation Qualité & Tests
+
+![CI/CD Pipeline](https://github.com/votre-username/todoapp_eval_quali-test/workflows/🚀%20CI/CD%20Pipeline%20-%20TODO%20App%20Quality%20&%20Tests/badge.svg)
+![Tests](https://img.shields.io/github/workflow/status/votre-username/todoapp_eval_quali-test/Tests)
+![Coverage](https://codecov.io/gh/votre-username/todoapp_eval_quali-test/branch/main/graph/badge.svg)
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
