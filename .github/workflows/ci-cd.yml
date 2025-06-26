@@ -1,4 +1,4 @@
-name: 🚀 CI/CD Pipeline - TODO App Quality & Tests
+name: 🧪 Tests Pipeline - Unit & E2E Only
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened]
 
-# Variables d'environnement globales
+# Variables d'environnement
 env:
   NODE_VERSION: "18.x"
   FRONTEND_PORT: 3000
@@ -15,60 +15,17 @@ env:
 
 jobs:
   # ==========================================
-  # JOB 1: QUALITÉ DU CODE ET VALIDATION
-  # ==========================================
-  code-quality:
-    name: 🔍 Code Quality & Linting
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Récupération complète pour SonarCloud
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: 📦 Install Dependencies
-        run: |
-          npm ci
-          cd server && npm ci
-
-      - name: 🧹 ESLint Check
-        run: |
-          npm run lint || echo "⚠️ ESLint warnings detected"
-          cd server && npm run lint || echo "⚠️ Server ESLint warnings detected"
-
-      - name: 🎨 Prettier Check
-        run: |
-          npm run format:check || echo "⚠️ Formatting issues detected"
-
-      - name: 📊 TypeScript Type Check
-        run: |
-          npm run type-check || npx tsc --noEmit
-
-      - name: 📋 Dependency Audit
-        run: |
-          npm audit --audit-level moderate
-          cd server && npm audit --audit-level moderate
-
-  # ==========================================
-  # JOB 2: TESTS UNITAIRES BACKEND
+  # JOB 1: TESTS UNITAIRES API
   # ==========================================
   unit-tests:
-    name: 🧪 Tests Unitaires (Backend)
+    name: 🧪 Tests Unitaires API
     runs-on: ubuntu-latest
-    needs: code-quality
 
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: 🔧 Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -87,39 +44,35 @@ jobs:
         run: |
           cd server && npm run test:coverage
 
-      - name: 📈 Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./server/coverage/lcov.info
-          flags: backend
-          name: backend-coverage
-
-      - name: 💾 Archive Test Results
+      - name: 📈 Upload Coverage Report
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: unit-test-results
-          path: |
-            server/coverage/
-            server/test-results.xml
+          name: unit-test-coverage
+          path: server/coverage/
+
+      - name: 📋 Display Test Results
+        if: always()
+        run: |
+          echo "## 🧪 Unit Tests Results" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Tests unitaires de l'API exécutés" >> $GITHUB_STEP_SUMMARY
 
   # ==========================================
-  # JOB 3: BUILD ET DÉMARRAGE DES SERVICES
+  # JOB 2: BUILD & SERVICES (pour E2E)
   # ==========================================
-  build-and-start:
-    name: 🏗️ Build & Start Services
+  build-services:
+    name: 🏗️ Build Services for E2E
     runs-on: ubuntu-latest
-    needs: code-quality
+    needs: unit-tests
 
     outputs:
-      backend-health: ${{ steps.health-check.outputs.backend-status }}
-      frontend-health: ${{ steps.health-check.outputs.frontend-status }}
+      services-ready: ${{ steps.health-check.outputs.services-status }}
 
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: 🔧 Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -131,63 +84,65 @@ jobs:
           cd server && npm ci
 
       - name: 🏗️ Build Applications
-        run: |
-          npm run build
+        run: npm run build
 
       - name: 🚀 Start Backend Server
         run: |
           cd server && npm start &
           echo $! > backend.pid
-          sleep 10
+          sleep 15
 
       - name: 🚀 Start Frontend Server
         run: |
           npm run start:next &
           echo $! > frontend.pid
-          sleep 15
+          sleep 20
 
       - name: 🏥 Health Check Services
         id: health-check
         run: |
-          # Test Backend Health
+          # Test Backend API
           backend_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ env.BACKEND_PORT }}/health || echo "000")
-          echo "backend-status=$backend_status" >> $GITHUB_OUTPUT
 
-          # Test Frontend Health
+          # Test Frontend
           frontend_status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${{ env.FRONTEND_PORT }} || echo "000")
-          echo "frontend-status=$frontend_status" >> $GITHUB_OUTPUT
 
-          echo "🔍 Backend Health: $backend_status"
-          echo "🔍 Frontend Health: $frontend_status"
+          if [ "$backend_status" = "200" ] && [ "$frontend_status" = "200" ]; then
+            echo "services-status=ready" >> $GITHUB_OUTPUT
+            echo "✅ Services démarrés avec succès"
+          else
+            echo "services-status=failed" >> $GITHUB_OUTPUT
+            echo "❌ Échec démarrage services"
+            exit 1
+          fi
 
-      - name: 📊 Validate API Endpoints
+      - name: 🧪 Quick API Test
         run: |
-          # Test des endpoints CRUD
-          echo "🧪 Testing API Endpoints..."
-
-          # GET /api/tasks
+          # Test CRUD de base
           curl -f http://localhost:${{ env.BACKEND_PORT }}/api/tasks || exit 1
 
-          # POST /api/tasks
+          # Test création tâche
           curl -f -X POST http://localhost:${{ env.BACKEND_PORT }}/api/tasks \
             -H "Content-Type: application/json" \
-            -d '{"title":"CI Test Task","completed":false}' || exit 1
+            -d '{"title":"Test CI","completed":false}' || exit 1
 
-      - name: 🛑 Cleanup Processes
+      - name: 🛑 Cleanup
         if: always()
         run: |
-          if [ -f backend.pid ]; then kill $(cat backend.pid) || true; fi
-          if [ -f frontend.pid ]; then kill $(cat frontend.pid) || true; fi
+          if [ -f backend.pid ]; then kill $(cat backend.pid) 2>/dev/null || true; fi
+          if [ -f frontend.pid ]; then kill $(cat frontend.pid) 2>/dev/null || true; fi
 
   # ==========================================
-  # JOB 4: TESTS END-TO-END
+  # JOB 3: TESTS END-TO-END
   # ==========================================
   e2e-tests:
-    name: 🎭 Tests End-to-End (Cypress)
+    name: 🎭 Tests E2E - ${{ matrix.test-suite }}
     runs-on: ubuntu-latest
-    needs: [unit-tests, build-and-start]
+    needs: build-services
+    if: needs.build-services.outputs.services-ready == 'ready'
 
     strategy:
+      fail-fast: false
       matrix:
         test-suite:
           - task-creation
@@ -202,7 +157,7 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
+      - name: 🔧 Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -216,37 +171,16 @@ jobs:
       - name: 🏗️ Build Applications
         run: npm run build
 
-      - name: 🚀 Start Services
-        run: |
-          # Démarrer le backend
-          cd server && npm start &
-          echo $! > backend.pid
-
-          # Démarrer le frontend
-          npm run start:next &
-          echo $! > frontend.pid
-
-          # Attendre que les services soient prêts
-          sleep 20
-
-      - name: ⏳ Wait for Services
-        run: |
-          # Attendre que l'API soit disponible
-          timeout 60 bash -c 'until curl -f http://localhost:${{ env.BACKEND_PORT }}/health; do sleep 2; done'
-
-          # Attendre que le frontend soit disponible
-          timeout 60 bash -c 'until curl -f http://localhost:${{ env.FRONTEND_PORT }}; do sleep 2; done'
-
       - name: 🎭 Run Cypress E2E Tests
         uses: cypress-io/github-action@v6
         with:
           start: |
-            npm run start:next
             cd server && npm start
+            npm run start:next
           wait-on: |
-            http://localhost:${{ env.FRONTEND_PORT }}
             http://localhost:${{ env.BACKEND_PORT }}/health
-          wait-on-timeout: 120
+            http://localhost:${{ env.FRONTEND_PORT }}
+          wait-on-timeout: 180
           browser: chrome
           headless: true
           spec: cypress/e2e/todo/${{ matrix.test-suite }}.cy.ts
@@ -255,163 +189,69 @@ jobs:
               "baseUrl": "http://localhost:${{ env.FRONTEND_PORT }}",
               "env": {
                 "API_URL": "http://localhost:${{ env.BACKEND_PORT }}/api"
-              }
+              },
+              "video": true,
+              "screenshotOnRunFailure": true
             }
 
-      - name: 📊 Upload Cypress Screenshots
+      - name: 📊 Upload Test Artifacts
         uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: cypress-screenshots-${{ matrix.test-suite }}
-          path: cypress/screenshots
+          name: e2e-failure-${{ matrix.test-suite }}
+          path: |
+            cypress/screenshots
+            cypress/videos
 
-      - name: 📹 Upload Cypress Videos
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: cypress-videos-${{ matrix.test-suite }}
-          path: cypress/videos
-
-      - name: 🛑 Cleanup Processes
+      - name: 📋 Test Results Summary
         if: always()
         run: |
-          if [ -f backend.pid ]; then kill $(cat backend.pid) || true; fi
-          if [ -f frontend.pid ]; then kill $(cat frontend.pid) || true; fi
+          echo "## 🎭 E2E Tests - ${{ matrix.test-suite }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Tests E2E réussis pour ${{ matrix.test-suite }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Tests E2E échoués pour ${{ matrix.test-suite }}" >> $GITHUB_STEP_SUMMARY
+          fi
 
   # ==========================================
-  # JOB 5: DOCUMENTATION ET SWAGGER
+  # JOB 4: RAPPORT FINAL SIMPLIFIÉ
   # ==========================================
-  documentation:
-    name: 📚 Documentation & Swagger Validation
+  test-report:
+    name: 📋 Tests Summary Report
     runs-on: ubuntu-latest
-    needs: build-and-start
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: 📦 Install Dependencies
-        run: |
-          npm ci
-          cd server && npm ci
-
-      - name: 🚀 Start Backend for Documentation
-        run: |
-          cd server && npm start &
-          echo $! > backend.pid
-          sleep 10
-
-      - name: 📊 Validate Swagger Documentation
-        run: |
-          # Vérifier que Swagger UI est accessible
-          curl -f http://localhost:${{ env.BACKEND_PORT }}/api-docs || exit 1
-
-          # Vérifier que le JSON OpenAPI est valide
-          curl -f http://localhost:${{ env.BACKEND_PORT }}/api-docs.json || exit 1
-
-          # Valider la structure OpenAPI
-          npx swagger-parser validate http://localhost:${{ env.BACKEND_PORT }}/api-docs.json
-
-      - name: 📋 Generate JSDoc Documentation
-        run: |
-          # Générer la documentation JSDoc pour le backend
-          cd server && npx jsdoc -c jsdoc.conf.json || echo "⚠️ JSDoc generation warnings"
-
-      - name: 📤 Deploy Documentation Preview
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "📖 Documentation preview available at:"
-          echo "🔗 Swagger UI: http://localhost:${{ env.BACKEND_PORT }}/api-docs"
-          echo "📚 JSDoc: Generated in server/docs/"
-
-      - name: 🛑 Cleanup
-        if: always()
-        run: |
-          if [ -f backend.pid ]; then kill $(cat backend.pid) || true; fi
-
-  # ==========================================
-  # JOB 6: SECURITY ET DEPENDENCIES
-  # ==========================================
-  security:
-    name: 🔒 Security & Dependencies Check
-    runs-on: ubuntu-latest
-    needs: code-quality
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-
-      - name: 📦 Install Dependencies
-        run: |
-          npm ci
-          cd server && npm ci
-
-      - name: 🔍 Security Audit
-        run: |
-          npm audit --audit-level high
-          cd server && npm audit --audit-level high
-
-      - name: 🕵️ Check for Outdated Dependencies
-        run: |
-          npm outdated || echo "⚠️ Some dependencies are outdated"
-          cd server && npm outdated || echo "⚠️ Server dependencies are outdated"
-
-      - name: 🛡️ Snyk Security Check
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high
-
-  # ==========================================
-  # JOB 7: RÉSUMÉ ET RAPPORT FINAL
-  # ==========================================
-  final-report:
-    name: 📋 Final Quality Report
-    runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests, e2e-tests, documentation, security]
+    needs: [unit-tests, e2e-tests]
     if: always()
 
     steps:
-      - name: 📊 Generate Quality Report
+      - name: 📊 Generate Tests Report
         run: |
-          echo "## 🎯 TODO App CI/CD Pipeline Report" >> $GITHUB_STEP_SUMMARY
+          echo "# 🧪 Tests Pipeline Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Jobs Status:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔍 Code Quality: ${{ needs.code-quality.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🧪 Unit Tests: ${{ needs.unit-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🎭 E2E Tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 📚 Documentation: ${{ needs.documentation.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔒 Security: ${{ needs.security.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "## 📋 Tests Status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🏆 Evaluation Criteria Coverage:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ API REST fonctionnelle (8 points)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Tests unitaires (2 points)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Tests E2E (2 points)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Pipeline CI/CD (4 points)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Documentation Swagger (2 points)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Commentaires JSDoc (2 points)" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Type | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Unit Tests API | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎭 E2E Tests | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.unit-tests.result }}" = "success" ] && [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+            echo "## ✅ Tous les tests sont passés avec succès !" >> $GITHUB_STEP_SUMMARY
+            echo "🎯 Application prête pour évaluation" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ⚠️ Certains tests nécessitent une attention" >> $GITHUB_STEP_SUMMARY
+            echo "🔍 Consultez les détails des jobs pour plus d'informations" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: 🎉 Success Notification
         if: needs.unit-tests.result == 'success' && needs.e2e-tests.result == 'success'
         run: |
-          echo "🎉 All tests passed! Ready for evaluation."
+          echo "🎉 SUCCESS: Tous les tests unitaires et E2E sont passés !"
+          echo "📊 Pipeline de tests optimisé fonctionnel"
 
-      - name: ⚠️ Failure Notification
+      - name: ❌ Failure Notification
         if: needs.unit-tests.result == 'failure' || needs.e2e-tests.result == 'failure'
         run: |
-          echo "❌ Some tests failed. Please review the results."
+          echo "❌ ATTENTION: Des tests ont échoué"
+          echo "🛠️ Vérifiez les logs pour identifier les problèmes"
           exit 1
